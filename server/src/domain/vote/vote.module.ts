@@ -5,12 +5,14 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Vote, voteSchema } from "./entities/vote.entity";
 import { RepresentantModule } from "../representant/representant.module";
 import { BoardModule } from "../board/board.module";
+import { WebsocketsModule } from "../../shared/websockets/websockets.module";
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Vote.name, schema: voteSchema }]),
     RepresentantModule,
     BoardModule,
+    WebsocketsModule
   ],
   controllers: [VoteController],
   providers: [VoteService],

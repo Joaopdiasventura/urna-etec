@@ -9,6 +9,7 @@ import { ClassModule } from "./domain/class/class.module";
 import { RepresentantModule } from "./domain/representant/representant.module";
 import { BoardModule } from "./domain/board/board.module";
 import { VoteModule } from "./domain/vote/vote.module";
+import { WebsocketsModule } from './shared/websockets/websockets.module';
 
 @Module({
   imports: [
