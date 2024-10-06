@@ -17,7 +17,11 @@ export class RepresentantService {
   }
 
   async findAll(): Promise<Representant[]> {
-    return await this.representantModel.find().exec();
+    return await this.representantModel
+      .find()
+      .populate("class")
+      .sort("class.course class.year name")
+      .exec();
   }
 
   async findById(id: string): Promise<Representant> {

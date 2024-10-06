@@ -2,17 +2,17 @@ import { Module } from "@nestjs/common";
 import { VoteService } from "./vote.service";
 import { VoteController } from "./vote.controller";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Vote, voteSchema } from "./entities/vote.entity";
+import { voteSchema } from "./entities/vote.entity";
 import { RepresentantModule } from "../representant/representant.module";
 import { BoardModule } from "../board/board.module";
 import { WebsocketsModule } from "../../shared/websockets/websockets.module";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Vote.name, schema: voteSchema }]),
+    MongooseModule.forFeature([{ name: "Vote", schema: voteSchema }]),
     RepresentantModule,
     BoardModule,
-    WebsocketsModule
+    WebsocketsModule,
   ],
   controllers: [VoteController],
   providers: [VoteService],
