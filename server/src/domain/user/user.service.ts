@@ -14,8 +14,8 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<void> {
-    await this.userModel.create(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await this.userModel.create(createUserDto);
   }
 
   async findAll(): Promise<User[]> {
@@ -43,5 +43,12 @@ export class UserService {
       password,
       await genSalt(parseInt(this.configService.get<string>("salt"))),
     );
+  }
+
+  async comparePasswords(
+    password: string,
+    password_: string,
+  ): Promise<boolean> {
+    return await compare(password, password_);
   }
 }

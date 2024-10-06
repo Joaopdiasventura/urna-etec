@@ -8,10 +8,13 @@ import {
   Delete,
   BadRequestException,
   NotFoundException,
+  HttpCode,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { LoginUserDto } from "./dto/login-user.dto";
 
 @Controller("user")
 export class UserController {
@@ -28,9 +31,26 @@ export class UserController {
       createUserDto.password,
     );
 
-    await this.userService.create(createUserDto);
+    const user = await this.userService.create(createUserDto);
 
-    return { message: "Usuário criado com sucesso" };
+    return { message: "Usuário criado com sucesso", user };
+  }
+
+  @HttpCode(200)
+  @Post("/login")
+  async login(@Body() loginUserDto: LoginUserDto) {
+    const user = await this.userService.findByName(loginUserDto.name);
+    if (!user) throw new NotFoundException("Email não cadastrado");
+    if (
+      !(await this.userService.comparePasswords(
+        loginUserDto.password,
+        user.password,
+      ))
+    )
+      throw new UnauthorizedException("Senha incorreta");
+    return {
+      user,
+    };
   }
 
   @Get()
@@ -65,7 +85,6 @@ export class UserController {
 
   async existUser(id: string) {
     const user = await this.userService.findById(id);
-
     if (!user) throw new NotFoundException("Usuário não encontrado");
   }
 }
