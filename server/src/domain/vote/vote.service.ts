@@ -1,29 +1,37 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateVoteDto } from "./dto/create-vote.dto";
-import { InjectModel } from "@nestjs/mongoose";
 import { Vote } from "./entities/vote.entity";
-import { Model } from "mongoose";
 import { VoteGateway } from "../../shared/websockets/vote/vote.gateway";
+import { VoteRepository } from "./repositories/vote.repository";
+import { BoardService } from "../board/board.service";
+import { RepresentantService } from "../representant/representant.service";
 
 @Injectable()
 export class VoteService {
-  constructor(
-    @InjectModel(Vote.name) private readonly voteModel: Model<Vote>,
-    private readonly voteGateway: VoteGateway
-  ) {}
+    constructor(
+        @Inject("VoteRepository")
+        private readonly voteRepository: VoteRepository,
+        private readonly representantService: RepresentantService,
+        private readonly boardService: BoardService,
+        private readonly voteGateway: VoteGateway,
+    ) {}
 
-  async create(createVoteDto: CreateVoteDto): Promise<void> {
-    const vote: Vote = await this.voteModel.create(createVoteDto);
-    this.voteGateway.broadcastVoteCreated(vote);
-  }
+    async create(createVoteDto: CreateVoteDto): Promise<void> {
+        await this.existRepresentant(createVoteDto.representant);
+        await this.existBoard(createVoteDto.board);
+        const vote: Vote = await this.voteRepository.create(createVoteDto);
+        this.voteGateway.broadcastVoteCreated(vote);
+    }
 
-  async findAll(): Promise<Vote[]> {
-    return this.voteModel.find().populate([
-      {
-        path: "representant",
-        populate: { path: "class" },
-      },
-      { path: "board" },
-    ]);
-  }
+    async findAll(): Promise<Vote[]> {
+        return this.voteRepository.findAll();
+    }
+
+    async existRepresentant(id: string) {
+        await this.representantService.findById(id);
+    }
+
+    async existBoard(id: string) {
+        await this.boardService.findById(id);
+    }
 }

@@ -5,12 +5,12 @@ import { Board } from "../../board/entities/board.entity";
 
 @Schema({ versionKey: false })
 export class Vote extends Document {
-  @Prop({ default: Date.now() })
-  createdAt: Date;
-  @Prop({ type: Types.ObjectId, ref: "Representant" })
-  representant: string | Representant;
-  @Prop({ type: Types.ObjectId, ref: "Board" })
-  board: string | Board;
+    @Prop({ default: Date.now() })
+    createdAt: Date;
+    @Prop({ type: Types.ObjectId, ref: "Representant" })
+    representant: string | Representant;
+    @Prop({ type: Types.ObjectId, ref: "Board" })
+    board: string | Board;
 }
 
 export type voteDocument = HydratedDocument<Vote>;

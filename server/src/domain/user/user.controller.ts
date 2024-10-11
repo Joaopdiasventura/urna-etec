@@ -1,90 +1,56 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  BadRequestException,
-  NotFoundException,
-  HttpCode,
-  UnauthorizedException,
+    Controller,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    HttpCode,
+    UseGuards,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
+import { AuthService } from "../../auth/auth.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { LoginUserDto } from "./dto/login-user.dto";
+import { AuthGuard } from "../../auth/guards/auth.guard";
 
 @Controller("user")
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly authService: AuthService,
+    ) {}
 
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    const existUser = await this.userService.findByName(createUserDto.name);
+    @Post()
+    async create(@Body() createUserDto: CreateUserDto) {
+        const user = await this.userService.create(createUserDto);
+        const token = await this.authService.generateToken(user.id);
+        return { message: "Usuário criado com sucesso", user, token };
+    }
 
-    if (existUser)
-      throw new BadRequestException("Já existe um usuário com esse nome");
+    @HttpCode(200)
+    @Post("/login")
+    async login(@Body() loginUserDto: LoginUserDto) {
+        const user = await this.userService.validatePassword(loginUserDto);
+        const token = await this.authService.generateToken(user.id);
+        return { message: "Login realizado com sucesso", user, token };
+    }
 
-    createUserDto.password = await this.userService.hashPassword(
-      createUserDto.password,
-    );
+    @UseGuards(AuthGuard)
+    @Patch(":id")
+    async update(
+        @Param("id") id: string,
+        @Body() updateUserDto: UpdateUserDto,
+    ) {
+        await this.userService.update(id, updateUserDto);
+        return { message: "Usuário atulizado com sucesso" };
+    }
 
-    const user = await this.userService.create(createUserDto);
-
-    return { message: "Usuário criado com sucesso", user };
-  }
-
-  @HttpCode(200)
-  @Post("/login")
-  async login(@Body() loginUserDto: LoginUserDto) {
-    const user = await this.userService.findByName(loginUserDto.name);
-    if (!user) throw new NotFoundException("Email não cadastrado");
-    if (
-      !(await this.userService.comparePasswords(
-        loginUserDto.password,
-        user.password,
-      ))
-    )
-      throw new UnauthorizedException("Senha incorreta");
-    return {
-      user,
-    };
-  }
-
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(":name")
-  async findOne(@Param("name") name: string) {
-    const user = await this.userService.findByName(name);
-    if (!user) throw new NotFoundException("Usuário não encontrado");
-    return user;
-  }
-
-  @Patch(":id")
-  async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-    if (updateUserDto.password)
-      updateUserDto.password = await this.userService.hashPassword(
-        updateUserDto.password,
-      );
-
-    await this.userService.update(id, updateUserDto);
-    return { message: "Usuário atulizado com sucesso" };
-  }
-
-  @Delete(":id")
-  async remove(@Param("id") id: string) {
-    await this.existUser(id);
-    await this.userService.remove(id);
-    return { message: "Usuário deletado com sucesso" };
-  }
-
-  async existUser(id: string) {
-    const user = await this.userService.findById(id);
-    if (!user) throw new NotFoundException("Usuário não encontrado");
-  }
+    @UseGuards(AuthGuard)
+    @Delete(":id")
+    async remove(@Param("id") id: string) {
+        await this.userService.remove(id);
+        return { message: "Usuário deletado com sucesso" };
+    }
 }
