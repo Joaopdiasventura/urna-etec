@@ -3,18 +3,18 @@ import { BoardController } from "../board.controller";
 import { BoardService } from "../board.service";
 
 describe("BoardController", () => {
-  let controller: BoardController;
+    let controller: BoardController;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [BoardController],
-      providers: [BoardService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            controllers: [BoardController],
+            providers: [BoardService],
+        }).compile();
 
-    controller = module.get<BoardController>(BoardController);
-  });
+        controller = module.get<BoardController>(BoardController);
+    });
 
-  it("should be defined", () => {
-    expect(controller).toBeDefined();
-  });
+    it("should be defined", () => {
+        expect(controller).toBeDefined();
+    });
 });
