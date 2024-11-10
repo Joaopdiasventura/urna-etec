@@ -1,0 +1,6 @@
+test
+*.spec.ts
+.gitignore
+.prettierrc
+dist
+node_modules
